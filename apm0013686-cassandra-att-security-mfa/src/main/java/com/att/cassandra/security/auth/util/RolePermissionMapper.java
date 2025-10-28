@@ -27,7 +27,12 @@ public class RolePermissionMapper {
         // Determine keyspace from resource, fallback to defaultRoles if not found
         String keyspace = null;
         if (resource instanceof DataResource) {
-            keyspace = ((DataResource) resource).getKeyspace();
+            try {
+                keyspace = ((DataResource) resource).getKeyspace();
+            } catch (Exception e) {
+                // ROOT or other resources without keyspace will throw exception
+                System.out.println("DEBUG: Unable to get keyspace from resource: " + e.getMessage());
+            }
         }
         KeyspaceRolesConfig ksConfig = null;
         if (keyspace != null && keyspaces != null) {
@@ -38,9 +43,31 @@ public class RolePermissionMapper {
                 }
             }
         }
-        // For non-DataResource (keyspace not determined), use first config if provided
-        if (!(resource instanceof DataResource) && ksConfig == null && keyspaces != null && !keyspaces.isEmpty()) {
-            ksConfig = keyspaces.get(0);
+        // When keyspace is not determined (ROOT/ALL resources), try all keyspace configs
+        if (ksConfig == null && keyspaces != null && !keyspaces.isEmpty()) {
+            // Try to find a matching role in any keyspace config
+            if (groups != null) {
+                for (KeyspaceRolesConfig k : keyspaces) {
+                    String rolePrefix = (k.getRolePrefix() != null) ? k.getRolePrefix() : "";
+                    String expectedPrefix = rolePrefix.isEmpty() || rolePrefix.endsWith("-") ? rolePrefix : rolePrefix + "-";
+                    for (String group : groups) {
+                        if (group.startsWith(expectedPrefix)) {
+                            String roleName = group.substring(expectedPrefix.length());
+                            List<RoleConfig> kRoles = k.getRoles();
+                            if (kRoles != null) {
+                                for (RoleConfig role : kRoles) {
+                                    if (role.getName() != null && role.getName().equalsIgnoreCase(roleName)) {
+                                        ksConfig = k;
+                                        break;
+                                    }
+                                }
+                            }
+                            if (ksConfig != null) break;
+                        }
+                    }
+                    if (ksConfig != null) break;
+                }
+            }
         }
         List<RoleConfig> roles = (ksConfig != null) ? ksConfig.getRoles() : defaultRoles;
         // Use empty prefix when no keyspace config (fallback roles)
@@ -65,11 +92,11 @@ public class RolePermissionMapper {
         Set<Permission> permissions = new TreeSet<>();
         if (roles != null && groups != null) {
             for (String group : groups) {
-                 System.out.println("DEBUG: group=" + group + ", expectedPrefix=" + expectedPrefix);
-                 if (!group.startsWith(expectedPrefix)) {
-                     System.out.println("DEBUG: group does not start with expectedPrefix, skipping");
-                     continue;
-                 }
+                System.out.println("DEBUG: group=" + group + ", expectedPrefix=" + expectedPrefix);
+                if (!group.startsWith(expectedPrefix)) {
+                    System.out.println("DEBUG: group does not start with expectedPrefix, skipping");
+                    continue;
+                }
                 String roleName = group.substring(expectedPrefix.length());
                 System.out.println("DEBUG: roleName after prefix strip=" + roleName);
                 RoleConfig role = roleMap.get(roleName.toLowerCase());
@@ -80,8 +107,13 @@ public class RolePermissionMapper {
                         String tableName = null;
                         if (resource instanceof DataResource) {
                             typeMatches = "data".equalsIgnoreCase(rpc.getType());
-                            tableName = ((DataResource) resource).getTable();
-                            System.out.println("DEBUG: DataResource tableName=" + tableName);
+                            try {
+                                tableName = ((DataResource) resource).getTable();
+                                System.out.println("DEBUG: DataResource tableName=" + tableName);
+                            } catch (Exception e) {
+                                // ALL TABLES or other resources without specific table will throw exception
+                                System.out.println("DEBUG: Unable to get table from resource: " + e.getMessage());
+                            }
                             nameMatches = "*".equals(rpc.getName()) || (tableName != null && rpc.getName().equalsIgnoreCase(tableName));
                         } else {
                             typeMatches = resource.getName().startsWith(rpc.getType());
@@ -102,6 +134,6 @@ public class RolePermissionMapper {
                 }
             }
         }
-         return permissions;
+        return permissions;
     }
 }
