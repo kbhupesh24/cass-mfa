@@ -24,7 +24,7 @@ keyspaces:
           - type: data
             name: "*"
             permissions: [ADMIN]
-      - name: ADMIN #create this role AR
+      - name: ADMIN
         resources:
           - type: data
             name: "*"
@@ -58,7 +58,9 @@ externalServices:
   jwt:
     jwksUrl: https://login.microsoftonline.com/e741d71c-c6b6-47b0-803c-0f3b32b07556/discovery/v2.0/keys
     issuer: https://sts.windows.net/e741d71c-c6b6-47b0-803c-0f3b32b07556/
-    audience: api://836282d7-675d-40f0-997b-b3522d97a7ab
+    #audience: https://management.core.windows.net/
+    #audience: api://836282d7-675d-40f0-997b-b3522d97a7ab
+    audience: 836282d7-675d-40f0-997b-b3522d97a7ab
   corp_ldap:
     type: ldap
     # ...LDAP config for corporate directory...
