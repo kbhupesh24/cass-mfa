@@ -1,0 +1,89 @@
+<keyspaces>
+    <keyspace name="KEYSPACE1" role-prefix="AP-KEYSPACE1-">
+        <role name="WRITE">
+            <resources>
+                <resource type="functions" name="*">
+                    <permission>CREATE</permission>
+                    <permission>ALTER</permission>
+                    <permission>DROP</permission>
+                    <permission>EXECUTE</permission>
+                </resource>
+                <resource type="data" name="*">
+                    <permission>CREATE</permission>
+                    <permission>ALTER</permission>
+                    <permission>DROP</permission>
+                    <permission>SELECT</permission>
+                    <permission>MODIFY</permission>
+                </resource>
+                <resource type="mbean" name="*">
+                    <permission>DESCRIBE</permission>
+                    <permission>EXECUTE</permission>
+                    <permission>DESCRIBE</permission>
+                    <permission>SELECT</permission>
+                </resource>
+                <resource type="role" name="*">
+                    <permission>CREATE</permission>
+                    <permission>ALTER</permission>
+                    <permission>DROP</permission>
+                    <permission>DESCRIBE</permission>
+                </resource>
+            </resources>
+        </role>
+        <role name="READ">
+            <resources>
+                <resource type="data" name="*">
+                    <permission>SELECT</permission>
+                    <permission>DESCRIBE</permission>
+                </resource>
+                <resource type="mbean" name="*">
+                    <permission>DESCRIBE</permission>
+                    <permission>SELECT</permission>
+               </resource>
+                <resource type="role" name="*">
+                    <permission>DESCRIBE</permission>
+                </resource>
+            </resources>
+        </role>
+        <role name="ADMIN">
+            <resources>
+                <resource type="functions" name="*">
+                    <permission>CREATE</permission>
+                    <permission>ALTER</permission>
+                    <permission>DROP</permission>
+                    <permission>EXECUTE</permission>
+                    <permission>AUTHORIZE</permission>
+                </resource>
+                <resource type="data" name="*">
+                    <permission>CREATE</permission>
+                    <permission>ALTER</permission>
+                    <permission>DROP</permission>
+                    <permission>SELECT</permission>
+                    <permission>MODIFY</permission>
+                    <permission>AUTHORIZE</permission>
+                </resource>
+                <resource type="mbean" name="*">
+                    <permission>DESCRIBE</permission>
+                    <permission>EXECUTE</permission>
+                    <permission>DESCRIBE</permission>
+                    <permission>SELECT</permission>
+                    <permission>AUTHORIZE</permission>
+                </resource>
+                <resource type="roles" name="*">
+                    <permission>CREATE</permission>
+                    <permission>ALTER</permission>
+                    <permission>DROP</permission>
+                    <permission>DESCRIBE</permission>
+                    <permission>AUTHORIZE</permission>
+                </resource>
+            </resources>
+        </role>
+        <role name="MASKED">
+            <resources>
+                <resource type="data" name="*">
+                    <permission>UNMASK</permission>
+                    <permission>SELECT_MASKED</permission>
+                </resource>
+            </resources>
+        </role>
+    </keyspace>
+</keyspaces>

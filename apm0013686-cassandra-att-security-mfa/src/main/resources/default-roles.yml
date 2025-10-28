@@ -1,0 +1,45 @@
+roles:
+  - name: WRITE
+    resources:
+      - type: functions
+        name: "*"
+        permissions: [CREATE, ALTER, DROP, EXECUTE]
+      - type: data
+        name: "*"
+        permissions: [CREATE, ALTER, DROP, SELECT, MODIFY]
+      - type: mbean
+        name: "*"
+        permissions: [DESCRIBE, EXECUTE, DESCRIBE, SELECT]
+      - type: role
+        name: "*"
+        permissions: [CREATE, ALTER, DROP, DESCRIBE]
+  - name: READ
+    resources:
+      - type: data
+        name: "*"
+        permissions: [SELECT, DESCRIBE]
+      - type: mbean
+        name: "*"
+        permissions: [DESCRIBE, SELECT]
+      - type: role
+        name: "*"
+        permissions: [DESCRIBE]
+  - name: ADMIN
+    resources:
+      - type: functions
+        name: "*"
+        permissions: [CREATE, ALTER, DROP, EXECUTE, AUTHORIZE]
+      - type: data
+        name: "*"
+        permissions: [CREATE, ALTER, DROP, SELECT, MODIFY, AUTHORIZE]
+      - type: mbean
+        name: "*"
+        permissions: [DESCRIBE, EXECUTE, DESCRIBE, SELECT, AUTHORIZE]
+      - type: roles
+        name: "*"
+        permissions: [CREATE, ALTER, DROP, DESCRIBE, AUTHORIZE]
+  - name: MASKED
+    resources:
+      - type: data
+        name: "*"
+        permissions: [UNMASK, SELECT_MASKED]

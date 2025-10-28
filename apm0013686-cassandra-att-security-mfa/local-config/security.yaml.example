@@ -1,0 +1,133 @@
+# Example: security.yaml
+# Copy this to local-config/security.yaml and edit for your LDAP/Azure Entra environment
+cache:
+  ttlSeconds: 60
+  cleanupAfterSeconds: 300
+    roles:
+      - name: WRITE
+        resources:
+          - type: functions
+            name: "*"
+            permissions: [CREATE, ALTER, DROP, EXECUTE]
+          - type: data
+            name: "*"
+            permissions: [CREATE, ALTER, DROP, SELECT, MODIFY]
+          - type: mbean
+            name: "*"
+            permissions: [DESCRIBE, EXECUTE, DESCRIBE, SELECT]
+          - type: role
+            name: "*"
+            permissions: [CREATE, ALTER, DROP, DESCRIBE]
+      - name: READ
+        resources:
+          - type: data
+            name: "*"
+            permissions: [SELECT, DESCRIBE]
+          - type: mbean
+            name: "*"
+            permissions: [DESCRIBE, SELECT]
+          - type: role
+            name: "*"
+            permissions: [DESCRIBE]
+      - name: ADMIN
+        resources:
+          - type: functions
+            name: "*"
+            permissions: [CREATE, ALTER, DROP, EXECUTE, AUTHORIZE]
+          - type: data
+            name: "*"
+            permissions: [CREATE, ALTER, DROP, SELECT, MODIFY, AUTHORIZE]
+          - type: mbean
+            name: "*"
+            permissions: [DESCRIBE, EXECUTE, DESCRIBE, SELECT, AUTHORIZE]
+          - type: roles
+            name: "*"
+            permissions: [CREATE, ALTER, DROP, DESCRIBE, AUTHORIZE]
+      - name: MASKED
+        resources:
+          - type: data
+            name: "*"
+            permissions: [UNMASK, SELECT_MASKED]
+
+# ...add more as needed...
+externalServices:
+  ldap:
+    type: ldap
+    url: ldap://ad.example.com:389
+    bindUser: cn=admin,dc=example,dc=org
+    bindPassword: secret
+    userBaseDn: "ou=users,dc=example,dc=org"
+    userAttribute: uid
+    groupBaseDn: "ou=groups,dc=example,dc=org"
+    groupAttribute: cn
+    groupObjectClass: groupOfNames
+    groupMemberAttribute: member
+  jwt:
+    type: jwt
+    jwksUrl: https://login.microsoftonline.com/common/discovery/keys
+    issuer: https://sts.windows.net/<tenant-id>/
+    audience: <your-app-client-id>
+  corp_ldap:
+    type: ldap
+    # ...LDAP config for corporate directory...
+  partner_ldap:
+    type: ldap
+    # ...LDAP config for partner directory...
+  jwt_internal:
+    type: jwt
+    # ...JWT config for internal tokens...
+  jwt_external:
+    type: jwt
+    # ...JWT config for external tokens...
+internalUsers:
+  - cassandra
+authenticators:
+  ldap:
+    class: com.att.cassandra.security.auth.ldap.LdapAuthenticator
+    external_service: ldap
+  jwt:
+    class: com.att.cassandra.security.auth.jwt.JwtAuthenticator
+    external_service: jwt
+  internal:
+    class: org.apache.cassandra.auth.PasswordAuthenticator
+  corp_ldap:
+    class: com.att.cassandra.security.auth.ldap.LdapAuthenticator
+    external_service: corp_ldap
+  partner_ldap:
+    class: com.att.cassandra.security.auth.ldap.LdapAuthenticator
+    external_service: partner_ldap
+  jwt_internal:
+    class: com.att.cassandra.security.auth.jwt.JwtAuthenticator
+    external_service: jwt_internal
+  jwt_external:
+    class: com.att.cassandra.security.auth.jwt.JwtAuthenticator
+    external_service: jwt_external
+authorizers:
+  ldap:
+    class: com.att.cassandra.security.auth.ldap.LdapAuthorizer
+    external_service: ldap
+  jwt:
+    class: com.att.cassandra.security.auth.jwt.JwtAuthorizer
+    external_service: jwt
+  cassandra:
+    class: org.apache.cassandra.auth.CassandraAuthorizer
+chained:
+  authenticators: [ldap, jwt, internal]
+  authorizers: [ldap, jwt, cassandra]
+# Example: Multi-Provider JWT & LDAP (Logical Names)
+# This example shows how to configure multiple authenticators/authorizers of the same type using logical names.
+# The order determines which is tried first for each authentication/authorization request.
+# Each logical name is referenced in the chain and gets its own config block.
+# This enables robust hybrid and multi-provider authentication/authorization.
+# For multi-provider, use:
+# chained:
+#   authenticators: [corp_ldap, partner_ldap, jwt_internal, jwt_external, internal]
+#   authorizers: [ldap, jwt, cassandra]
+  # Example LDAP group/role mapping format for permissions:
+  #   <CLUSTER>-<RESOURCE>-<KEYSPACE>-<OBJECT>-<ACTION>
+  #   e.g. my-cluster-data-ks1-users-SELECT
+  #   - CLUSTER: Cassandra cluster name (spaces replaced with underscores in group name)
+  #   - RESOURCE: data, roles, functions, types, mbeans, etc.
+  #   - KEYSPACE: keyspace name or *
+  #   - OBJECT: table/function/type name or *
+  #   - ACTION: SELECT, MODIFY, AUTHORIZE, etc. or *

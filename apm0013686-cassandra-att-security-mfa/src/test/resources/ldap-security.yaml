@@ -1,0 +1,49 @@
+# LDAP and caching configuration
+ldap:
+  url: "ldap://ldap.example.com:389"
+  userDnPattern: "uid={0},ou=people,dc=example,dc=com"
+  bindUser: "cn=admin,dc=example,dc=com"
+  bindPassword: "adminpassword"
+  groupBaseDn: "ou=groups,dc=example,dc=com"
+  groupAttribute: "cn"
+cache:
+  ttlSeconds: 900   # 15 minutes
+  cleanupAfterSeconds: 1800  # remove unused entries after 30 minutes
+keyspaces:
+  - name: my_keyspace
+    rolePrefix: "AP-MYKS-"
+    roles:
+      - name: READ
+        resources:
+          - type: data
+            name: "*"
+            permissions: [SELECT]
+      - name: WRITE
+        resources:
+          - type: data
+            name: "*"
+            permissions: [MODIFY]
+  - name: other_keyspace
+    rolePrefix: "AP-OTHER-"
+    roles:
+      - name: READ
+        resources:
+          - type: data
+            name: "*"
+            permissions: [SELECT]
+      - name: ADMIN
+        resources:
+          - type: data
+            name: "*"
+            permissions: [ALL]
+defaultRoles:
+  - name: READ
+    resources:
+      - type: data
+        name: "*"
+        permissions: [SELECT]
+  - name: WRITE
+    resources:
+      - type: data
+        name: "*"
+        permissions: [MODIFY]

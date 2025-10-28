@@ -1,0 +1,35 @@
+# Unified security.yaml template for LDAP and JWT
+# Place this file as `security.yaml` on Cassandra’s classpath
+mode:
+  authentication: <ldap|jwt>    # select `ldap` or `jwt` authentication path
+  authorization: <ldap|jwt>     # select `ldap` or `jwt` authorization path
+authentication:
+  ldap:                   # optional LDAP auth and group lookup
+    url: "ldap://<host>:<port>"
+    userDnPattern: "uid={0},ou=people,dc=example,dc=com"
+    bindUser: "<bind DN>"
+    bindPassword: "<password>"
+    groupBaseDn: "<group base DN>"
+    groupAttribute: "<group attribute>"
+  jwt:                    # optional JWT auth & claims introspection
+    jwksUrl: "<jwks URL>"
+    issuer: "<expected issuer>"
+    audience: "<client ID>"
+    # optional: HTTP endpoint for fresh claims
+    userInfoUrl: "<UserInfo or introspection endpoint>"
+    refreshMinutes: <minutes>
+    expireHours: <hours>
+cache:
+  userGroup:              # caches LDAP group lookups
+    refreshMinutes: <minutes>
+    expireHours: <hours>
+roles:
+  clusters:
+    prod-cluster:
+      q
+      my_keyspace: MYKS_PROD
+    dev-cluster:
+      my_keyspace: MYKS_DEV
+    test-cluster:
+      my_keyspace: MYKS_TEST
+# End of template

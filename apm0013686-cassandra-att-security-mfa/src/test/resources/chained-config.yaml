@@ -1,0 +1,10 @@
+# ChainedAuthorizer test config for merging and protectedResources tests
+authorizers:
+  A:
+    class: com.att.cassandra.security.auth.ChainedAuthorizerTest$TestAuthA
+  Throws:
+    class: com.att.cassandra.security.auth.ChainedAuthorizerTest$TestAuthThrows
+  B:
+    class: com.att.cassandra.security.auth.ChainedAuthorizerTest$TestAuthB
+chained:
+  authorizers: [A, Throws, B]

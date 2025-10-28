@@ -1,0 +1,5 @@
+authenticators:
+  TestAuthA:
+    class: com.att.cassandra.security.auth.ChainedAuthenticatorYamlTest$TestAuthA
+chained:
+  authenticators: [TestAuthA]

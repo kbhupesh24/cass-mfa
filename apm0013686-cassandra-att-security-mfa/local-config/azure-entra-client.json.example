@@ -1,0 +1,7 @@
+{
+  "client_id": "YOUR-CLIENT-ID",
+  "client_secret": "YOUR-CLIENT-SECRET",
+  "tenant_id": "YOUR-TENANT-ID",
+  "authority": "https://login.microsoftonline.com/YOUR-TENANT-ID",
+  "scope": "api://YOUR-API-ID/.default"
+}

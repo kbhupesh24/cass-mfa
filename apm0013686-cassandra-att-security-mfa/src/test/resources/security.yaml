@@ -1,0 +1,81 @@
+# Minimal test security.yaml for ChainedAuthenticatorTest
+cache:
+  ttlSeconds: 60
+  cleanupAfterSeconds: 300
+keyspaces:
+  - name: ks1
+    rolePrefix: "AP-MYKS-"
+    roles:
+      - name: READ
+        resources:
+          - type: data
+            name: "*"
+            permissions: [SELECT]
+      - name: WRITE
+        resources:
+          - type: data
+            name: "*"
+            permissions: [MODIFY]
+  - name: other_keyspace
+    rolePrefix: "AP-OTHER-"
+    roles:
+      - name: READ
+        resources:
+          - type: data
+            name: "*"
+            permissions: [SELECT]
+      - name: ADMIN
+        resources:
+          - type: data
+            name: "*"
+            permissions: [ALL]
+defaultRoles:
+  - name: READ
+    resources:
+      - type: data
+        name: "*"
+        permissions: [SELECT]
+  - name: WRITE
+    resources:
+      - type: data
+        name: "*"
+        permissions: [MODIFY]
+externalServices:
+  jwt_test:
+    jwksUrl: "http://localhost:1234/.well-known/jwks.json"
+    issuer: "test-issuer"
+    audience: "test-audience"
+  ldap_test:
+    url: "ldap://localhost:389"
+    bindUser: "cn=admin,dc=example,dc=org"
+    bindPassword: "secret"
+    userBaseDn: "ou=users,dc=example,dc=org"
+    userAttribute: uid
+    groupBaseDn: "ou=groups,dc=example,dc=org"
+    groupAttribute: cn
+    groupObjectClass: groupOfNames
+    groupMemberAttribute: member
+internalUsers:
+  - cassandra
+authenticators:
+  jwt_test:
+    class: com.att.cassandra.security.auth.jwt.JwtAuthenticator
+    external_service: jwt_test
+  ldap_test:
+    class: com.att.cassandra.security.auth.ldap.LdapAuthenticator
+    external_service: ldap_test
+  internal:
+    class: org.apache.cassandra.auth.PasswordAuthenticator
+    # ...PasswordAuthenticator config...
+authorizers:
+  ldap:
+    class: com.att.cassandra.security.auth.ldap.LdapAuthorizer
+    external_service: ldap_test
+  jwt:
+    class: com.att.cassandra.security.auth.jwt.JwtAuthorizer
+    external_service: jwt_test
+  cassandra:
+    class: org.apache.cassandra.auth.CassandraAuthorizer
+chained:
+  authenticators: [jwt_test, ldap_test, internal]
+  authorizers: [ldap, jwt, cassandra]
