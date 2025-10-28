@@ -123,9 +123,24 @@ public class RolePermissionMapper {
                         if (typeMatches && nameMatches) {
                             for (String perm : rpc.getPermissions()) {
                                 try {
-                                    System.out.println("DEBUG: granting permission " + perm);
-                                    permissions.add(Permission.valueOf(perm));
-                                } catch (Exception ignore) {}
+                                    if ("ALL".equalsIgnoreCase(perm)) {
+                                        // Expand ALL to all available permissions
+                                        System.out.println("DEBUG: expanding ALL to all permissions");
+                                        permissions.add(Permission.CREATE);
+                                        permissions.add(Permission.ALTER);
+                                        permissions.add(Permission.DROP);
+                                        permissions.add(Permission.SELECT);
+                                        permissions.add(Permission.MODIFY);
+                                        permissions.add(Permission.AUTHORIZE);
+                                        permissions.add(Permission.DESCRIBE);
+                                        permissions.add(Permission.EXECUTE);
+                                    } else {
+                                        System.out.println("DEBUG: granting permission " + perm);
+                                        permissions.add(Permission.valueOf(perm));
+                                    }
+                                } catch (Exception e) {
+                                    System.out.println("DEBUG: failed to grant permission " + perm + ": " + e.getMessage());
+                                }
                             }
                         }
                     }
