@@ -147,7 +147,14 @@ public class JwtAuthorizer implements IAuthorizer {
 
     @Override
     public Set<Permission> authorize(AuthenticatedUser authnUser, IResource resource) {
-        String token = "authnUser.getJwtToken()";
+        if (!(authnUser instanceof DicaAuthenticatedUser)) {
+            logger.warn("AuthenticatedUser is not an instance of DicaAuthenticatedUser. AuthUser: {}, Resource: {}",
+                    authnUser.getName(), resource.getName());
+            return Collections.emptySet();
+        }
+        DicaAuthenticatedUser dicaUser = (DicaAuthenticatedUser) authnUser;
+        String token = dicaUser.getJwtToken();
+
         if (token == null) {
             logger.warn("No JWT token found. AuthUser: {}, Resource: {}",
                     authnUser.getName(), resource.getName());
